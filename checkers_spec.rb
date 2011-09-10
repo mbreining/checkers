@@ -37,13 +37,6 @@ describe Checkers::Game do
         }.to raise_error
       end
     end
-    context "when to_x value is invalid" do
-      it "raises an error" do
-        expect {
-          @game.move_piece([2,2], [0,3])
-        }.to raise_error
-      end
-    end
     context "when piece on from position is not owned" do
       it "raises an error" do
         expect {
@@ -57,22 +50,27 @@ describe Checkers::Game do
         }.to raise_error
       end
     end
-    context "when to_y value is invalid" do
-      it "raises an error" do
-        expect {
-          @game.move_piece([2,2], [3,2])
-        }.to raise_error
-        expect {
-          @game.move_count = 1
-          @game.move_piece([1,5], [0,5])
-        }.to raise_error
-      end
-    end
     context "when square on to position is already occupied" do
       it "raises an error" do
         expect {
           @game.move_piece([1,1], [2,2])
         }.to raise_error
+      end
+    end
+    context "when there are no more white pieces" do
+      it "ends the game" do
+        expect {
+          @game.white_count = 0
+          @game.move_piece([2,2], [3,3])
+        }.to change { @game.over }.from(false).to(true)
+      end
+    end
+    context "when there are no more black pieces" do
+      it "ends the game" do
+        expect {
+          @game.black_count = 0
+          @game.move_piece([2,2], [3,3])
+        }.to change { @game.over }.from(false).to(true)
       end
     end
     context "when the move is valid" do
@@ -89,21 +87,32 @@ describe Checkers::Game do
           @game.move_piece([2,2], [3,3])
         }.to change { @game.move_count }.from(0).to(1)
       end
-      context "when there are no more white pieces" do
-        it "ends the game" do
+    end
+    context "when the move is simple" do
+      context "when to_x value is invalid" do
+        it "raises an error" do
           expect {
-            @game.white_count = 0
-            @game.move_piece([2,2], [3,3])
-          }.to change { @game.over }.from(false).to(true)
+            @game.move_piece([2,2], [0,3])
+          }.to raise_error
         end
       end
-      context "when there are no more black pieces" do
-        it "ends the game" do
+      context "when to_y value is invalid" do
+        it "raises an error" do
           expect {
-            @game.black_count = 0
-            @game.move_piece([2,2], [3,3])
-          }.to change { @game.over }.from(false).to(true)
+            @game.move_piece([2,2], [3,2])
+          }.to raise_error
+          expect {
+            @game.move_count = 1
+            @game.move_piece([1,5], [0,5])
+          }.to raise_error
         end
+      end
+    end
+    context "when the move is a jump" do
+      it "removes the captured piece" do
+        @game.board[1][3] = "o"
+        @game.move_piece([2,2], [0,4])
+        @game.board[1][3].should == "_"
       end
     end
   end
